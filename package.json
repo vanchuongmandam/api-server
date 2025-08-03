@@ -1,4 +1,3 @@
-
 {
   "name": "api-server",
   "version": "1.0.0",
@@ -9,9 +8,10 @@
     "dev": "nodemon server.js"
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
     "express": "^4.17.1",
-    "mongoose": "^5.13.14",
-    "cors": "^2.8.5"
+    "mongoose": "^5.13.14"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"
