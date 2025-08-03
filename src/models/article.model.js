@@ -6,7 +6,12 @@ const articleSchema = new mongoose.Schema({
     title: { type: String, required: true },
     author: { type: String, required: true },
     date: { type: String, required: true }, 
-    category: { type: String, required: true },
+    // Reference to the Category model
+    category: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Category',
+        required: true
+    },
     excerpt: { type: String },
     content: { type: String, required: true },
     imageUrl: { type: String },

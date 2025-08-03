@@ -1,18 +1,22 @@
 
 const Article = require('../models/article.model');
+const Category = require('../models/category.model');
 
 exports.findAllArticles = async () => {
-    // Exclude 'content' for performance
-    return await Article.find().select('-content');
+    // Populate the 'category' field to include name and slug
+    return await Article.find().populate('category', 'name slug').select('-content');
 };
 
 exports.findArticleBySlug = async (slug) => {
-    return await Article.findOne({ slug: slug });
+    // Also populate category details for a single article
+    return await Article.findOne({ slug: slug }).populate('category', 'name slug');
 };
 
-exports.findSuggestions = async (currentSlug, category) => {
+exports.findSuggestions = async (currentSlug, categoryId) => {
+    // Find suggestions based on the category ID
+    // Exclude the current article using its slug
     return await Article.find({
-        slug: { $ne: currentSlug }, // $ne means "not equal"
-        category: category
-    }).limit(3).select('-content');
+        slug: { $ne: currentSlug },
+        category: categoryId 
+    }).limit(3).select('-content').populate('category', 'name slug');
 };
