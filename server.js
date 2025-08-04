@@ -3,7 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const path = require("path"); // Import path module
+// const path = require("path"); // Not needed if static serving is removed
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -17,16 +17,13 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// --- Static File Serving ---
-// This is a temporary setup for development. In production, Nginx will handle this.
-// It serves files from the specified directory.
-const mediaPath = path.join(__dirname, "media"); // A local 'media' folder for development
-// Ensure the directory exists for local development
-const fs = require("fs");
-if (!fs.existsSync(mediaPath)) {
-  fs.mkdirSync(mediaPath);
-}
-app.use("/media", express.static(mediaPath));
+// --- REMOVED: Static File Serving (handled by Nginx in production) ---
+// const mediaPath = path.join(__dirname, "media");
+// const fs = require("fs");
+// if (!fs.existsSync(mediaPath)) {
+//   fs.mkdirSync(mediaPath);
+// }
+// app.use("/media", express.static(mediaPath));
 
 
 // --- Routes ---
@@ -34,13 +31,13 @@ const authRoutes = require("./src/routes/auth.routes");
 const articleRoutes = require("./src/routes/article.routes");
 const categoryRoutes = require("./src/routes/category.routes");
 const commentRoutes = require("./src/routes/comment.routes");
-const uploadRoutes = require("./src/routes/upload.routes"); // Import upload routes
+const uploadRoutes = require("./src/routes/upload.routes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/articles", articleRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/comments", commentRoutes);
-app.use("/api/upload", uploadRoutes); // Use upload routes
+app.use("/api/upload", uploadRoutes);
 
 // --- Error Handling ---
 app.use((err, req, res, next) => {
