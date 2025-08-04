@@ -3,53 +3,49 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key';
 
-// Middleware to verify JWT token - RESTRUCTURED
+// Middleware to verify JWT and protect routes
 exports.protect = async (req, res, next) => {
-    console.log('--- ENTERING PROTECT MIDDLEWARE (RESTRUCTURED) ---');
-    
-    if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer')) {
-        console.error('[Protect] Error: No Bearer token found in header.');
-        return res.status(401).json({ message: 'Not authorized, no token' });
+    let token;
+
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        try {
+            // Get token from header
+            token = req.headers.authorization.split(' ')[1];
+
+            // Verify token
+            const decoded = jwt.verify(token, JWT_SECRET);
+            
+            // Attach user to the request, excluding the password
+            req.user = await User.findById(decoded.user.id).select('-password');
+            
+            if (!req.user) {
+                // This case is rare if the token is valid, but good to have
+                // e.g., user was deleted after the token was issued.
+                return res.status(401).json({ message: 'Not authorized, user not found' });
+            }
+            
+            next();
+
+        } catch (error) {
+            console.error('Authentication Error:', error.name, '-', error.message);
+            return res.status(401).json({ message: 'Not authorized, token failed' });
+        }
     }
 
-    try {
-        // 1. Get token from header
-        const token = req.headers.authorization.split(' ')[1];
-        console.log('[Protect] Token found:', token);
-
-        // 2. Verify token
-        const decoded = jwt.verify(token, JWT_SECRET);
-        console.log('[Protect] Token decoded successfully:', decoded);
-        
-        // 3. Attach user to the request
-        const user = await User.findById(decoded.user.id).select('-password');
-        
-        if (!user) {
-            console.error('[Protect] Error: User from token not found in DB.');
-            return res.status(401).json({ message: 'Not authorized, user not found' });
-        }
-        
-        req.user = user;
-        console.log('[Protect] Authorization successful. Calling next()...');
-        next(); // Move to the next middleware (isAdmin)
-
-    } catch (error) {
-        console.error('[Protect] Error caught:', error.name, '-', error.message);
-        // This will catch expired tokens, malformed tokens, etc.
-        return res.status(401).json({ message: 'Not authorized, token is invalid or expired' });
+    if (!token) {
+        return res.status(401).json({ message: 'Not authorized, no token' });
     }
 };
 
-// Middleware to check for admin role - RESTRUCTURED
+// Middleware to check for admin role
 exports.isAdmin = (req, res, next) => {
-    console.log('--- ENTERING ISADMIN MIDDLEWARE (RESTRUCTURED) ---');
-    
-    // The 'protect' middleware should always run first and attach 'req.user'
+    // 'protect' middleware must run before this, so req.user should exist.
     if (req.user && req.user.role === 'admin') {
-        console.log('[isAdmin] Role is "admin". Access granted.');
-        next(); // Move to the final controller function
+        next();
     } else {
-        console.error('[isAdmin] Error: User is not an admin or user object is missing.');
-        return res.status(403).json({ message: 'Forbidden: You do not have admin privileges' });
+        // We log this as an error because it's a potential security/logic issue.
+        // A non-admin user should ideally not be able to reach a route guarded by this.
+        console.error(`Forbidden Access Attempt: User '${req.user ? req.user.username : 'Unknown'}' tried to access an admin-only route.`);
+        return res.status(403).json({ message: 'Forbidden: You do not have the required admin privileges.' });
     }
 };
