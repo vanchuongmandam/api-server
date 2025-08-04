@@ -34,12 +34,16 @@ exports.login = async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        const user = await User.findOne({ username });
+        // Find user and explicitly exclude the password from the result
+        const user = await User.findOne({ username }).select('-password');
         if (!user) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        const isMatch = await user.comparePassword(password);
+        // Since we excluded the password, we need to fetch it separately for comparison
+        const userWithPassword = await User.findOne({ username });
+        const isMatch = await userWithPassword.comparePassword(password);
+        
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
@@ -57,12 +61,21 @@ exports.login = async (req, res) => {
             { expiresIn: '5h' }, // Token expires in 5 hours
             (err, token) => {
                 if (err) throw err;
-                res.json({ token });
+                
+                // Return both the token and the user object
+                res.json({
+                    token,
+                    user: {
+                        _id: user._id,
+                        username: user.username,
+                        role: user.role
+                    }
+                });
             }
         );
 
     } catch (error) {
-        console.error(error);
+        console.error('Login Error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
