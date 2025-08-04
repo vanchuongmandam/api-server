@@ -8,12 +8,10 @@ const { protect } = require('../middleware/auth.middleware');
 // @desc    Upload a single media file (image or video)
 // @access  Private
 router.post('/', protect, (req, res) => {
-    // 'upload.single('mediaFile')' will process one file attached to the form field named 'mediaFile'.
     const uploader = upload.single('mediaFile');
 
     uploader(req, res, function (err) {
         if (err) {
-            // Handle Multer errors (e.g., file size limit, wrong file type)
             console.error('Upload Error:', err.message);
             return res.status(400).json({ message: err.message });
         }
@@ -22,10 +20,11 @@ router.post('/', protect, (req, res) => {
             return res.status(400).json({ message: 'No file was uploaded.' });
         }
 
-        // IMPORTANT: Construct the public URL
-        // This URL must match the one served by Nginx later.
-        // Replace 'your_vps_ip_or_domain' with your actual server IP or domain name.
-        const fileUrl = `${req.protocol}://${req.get('host')}/media/${req.file.filename}`;
+        // --- URL CONSTRUCTION (IMPROVED FOR PRODUCTION) ---
+        // Use an environment variable for the base URL in production for reliability.
+        // Fallback to dynamic host for development.
+        const baseUrl = process.env.PUBLIC_URL || `${req.protocol}://${req.get('host')}`;
+        const fileUrl = `${baseUrl}/media/${req.file.filename}`;
 
         res.status(200).json({
             message: 'File uploaded successfully.',
