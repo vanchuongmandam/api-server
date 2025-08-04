@@ -22,16 +22,16 @@ app.use(express.json());
 const authRoutes = require('./src/routes/auth.routes');
 const articleRoutes = require('./src/routes/article.routes');
 const categoryRoutes = require('./src/routes/category.routes');
+const commentRoutes = require('./src/routes/comment.routes'); // Import comment routes
 
 app.use('/api/auth', authRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/comments', commentRoutes); // Use comment routes
 
 // Custom Error-Handling Middleware for JSON parsing errors
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    // In a production environment, you might not want to log the error message
-    // or at least not the request body, as it could contain sensitive information.
     console.error('JSON Parsing Error:', err.message);
     return res.status(400).json({ message: 'Bad Request: The request body is not valid JSON.' });
   }
@@ -44,7 +44,6 @@ const dbURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/vanchuongmam
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false })
     .then(() => {
         app.listen(port, () => {
-            // This is a useful log to keep, to know the server has started successfully.
             console.log(`Server running on port: ${port}`);
         });
     })
