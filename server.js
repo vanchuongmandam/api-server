@@ -11,6 +11,17 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// =================================================================
+// GENERIC LOGGER - This will run for EVERY single request
+app.use((req, res, next) => {
+    console.log('--- NEW REQUEST RECEIVED ---');
+    console.log(`METHOD: ${req.method}, URL: ${req.originalUrl}`);
+    console.log('HEADERS:', req.headers);
+    next(); // Pass control to the next middleware
+});
+// =================================================================
+
+
 // Routes
 const authRoutes = require('./src/routes/auth.routes');
 const articleRoutes = require('./src/routes/article.routes');
