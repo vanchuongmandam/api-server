@@ -50,4 +50,4 @@ jobs:
             npm install --omit=dev
             
             echo "--- Restarting API server ---"
-            pm2 restart api-server || pm2 start index.js --name api-server
+            pm2 restart api-server || pm2 start server.js --name api-server
