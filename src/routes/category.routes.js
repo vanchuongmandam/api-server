@@ -7,8 +7,7 @@ const { protect, isAdmin } = require('../middleware/auth.middleware');
 // @route   POST api/categories
 // @desc    Create a new category
 // @access  Private/Admin
-// router.post('/', protect, isAdmin, categoryController.createCategory); // Temporarily disabled for debugging
-router.post('/', categoryController.createCategory); // Bypassing auth middleware for the test
+router.post('/', protect, isAdmin, categoryController.createCategory); // Restoring the auth middleware
 
 // @route   GET api/categories
 // @desc    Get all categories
