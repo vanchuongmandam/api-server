@@ -14,7 +14,7 @@ Tạo một tài khoản người dùng mới.
   {
       "username": "ten_nguoi_dung",
       "password": "mat_khau_cua_ban",
-      "role": "user" // Tùy chọn, có thể là "user" hoặc "admin". Mặc định là "user".
+      "role": "user" 
   }
   ```
 
