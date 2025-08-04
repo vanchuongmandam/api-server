@@ -69,9 +69,9 @@ exports.getArticleBySlug = async (req, res) => {
 
 exports.getArticleSuggestions = async (req, res) => {
     try {
-        const { current_slug, category } = req.query;
+        const { current_slug, categoryId } = req.query;
         // This needs to be updated to work with category IDs now
-        const suggestions = await articleService.findSuggestions(current_slug, category);
+        const suggestions = await articleService.findSuggestions(current_slug, categoryId);
         res.status(200).json(suggestions);
     } catch (error) {
         res.status(500).json({ message: error.message });
