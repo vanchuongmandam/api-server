@@ -7,20 +7,26 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
+// --- Middleware ---
+
+// Explicit and robust CORS Configuration
+const corsOptions = {
+  origin: "*", // Allow all origins - good for development
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept, Authorization", // Explicitly allow Authorization header
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Enable pre-flight for all routes
+
 app.use(express.json());
 
-// =================================================================
-// GENERIC LOGGER - This will run for EVERY single request
+// GENERIC LOGGER
 app.use((req, res, next) => {
-    console.log('--- NEW REQUEST RECEIVED ---');
-    console.log(`METHOD: ${req.method}, URL: ${req.originalUrl}`);
-    console.log('HEADERS:', req.headers);
-    next(); // Pass control to the next middleware
+    console.log(`--- NEW REQUEST: ${req.method} ${req.originalUrl} ---`);
+    next();
 });
-// =================================================================
-
 
 // Routes
 const authRoutes = require('./src/routes/auth.routes');
