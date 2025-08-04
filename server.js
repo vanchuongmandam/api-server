@@ -19,25 +19,16 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
-// IMPORTANT: Custom error handler for JSON parsing errors
-app.use(express.json({
-    onerror: (err, req, res, next) => {
-        console.error('--- JSON PARSING ERROR ---');
-        console.error('Error:', err.message);
-        console.error('Request Body:', req.body); // The raw (and likely malformed) body
-        console.error('--------------------------');
-        res.status(400).json({ message: 'Bad Request: The request body is not valid JSON.' });
-    }
-}));
+// 1. Use standard express.json() middleware. It must come before the routes.
+app.use(express.json());
 
-
-// GENERIC LOGGER
+// 2. Generic Logger - This will now run for every request that gets past express.json()
 app.use((req, res, next) => {
     console.log(`--- NEW REQUEST: ${req.method} ${req.originalUrl} ---`);
     next();
 });
 
-// Routes
+// 3. Routes
 const authRoutes = require('./src/routes/auth.routes');
 const articleRoutes = require('./src/routes/article.routes');
 const categoryRoutes = require('./src/routes/category.routes');
@@ -46,8 +37,29 @@ app.use('/api/auth', authRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/categories', categoryRoutes);
 
+// 4. Custom Error-Handling Middleware
+// This middleware has 4 arguments, which Express recognizes as an error handler.
+// It will catch errors from express.json() parsing, and any `next(error)` calls.
+app.use((err, req, res, next) => {
+  // Check if the error is a syntax error thrown by express.json()
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    console.error('--- JSON PARSING ERROR ---');
+    console.error('Error Message:', err.message);
+    // The 'body' property contains the raw, unparsed body string.
+    // Be careful logging this in production as it might contain sensitive data.
+    console.error('Raw Request Body:', (err).body); 
+    console.error('--------------------------');
+    return res.status(400).json({ 
+      message: 'Bad Request: The request body is not valid JSON.' 
+    });
+  }
+  
+  // For any other errors, pass them on to the default Express handler
+  next(err);
+});
 
-// Database connection
+
+// 5. Database connection and Server start
 const dbURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/vanchuongmamdam';
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false })
     .then(() => app.listen(port, () => console.log(`Server running on port: ${port}`)))
