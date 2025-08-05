@@ -52,7 +52,7 @@ exports.login = async (req, res) => {
     // Find user and explicitly exclude the password from the result
     const user = await User.findOne({ username }).select("-password");
     if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ message: "Tên đăng nhập không tồn tại!" });
     }
 
     // Since we excluded the password, we need to fetch it separately for comparison
@@ -60,7 +60,7 @@ exports.login = async (req, res) => {
     const isMatch = await userWithPassword.comparePassword(password);
         
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ message: "Tên đăng nhập hoặc mật khẩu sai!" });
     }
 
     const payload = {
