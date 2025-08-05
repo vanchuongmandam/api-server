@@ -1,3 +1,4 @@
+// src/controllers/auth.controller.js
 
 const User = require("../models/user.model");
 const jwt = require("jsonwebtoken");
@@ -31,8 +32,22 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
+  // --- DEBUG ---
+  console.log("\n=============================================");
+  console.log("LOGIN REQUEST RECEIVED ON PRODUCTION SERVER");
+  console.log("Timestamp:", new Date().toISOString());
+  console.log("Request Body:", req.body);
+  console.log("Content-Type Header:", req.headers['content-type']);
+  console.log("=============================================\n");
+  // ----------------------------------------
+
   try {
     const { username, password } = req.body;
+
+    if (!username || !password) {
+      console.error("Validation failed: Username or password missing in req.body.");
+      return res.status(400).json({ message: "Bad Request: Username and password are required." });
+    }
 
     // Find user and explicitly exclude the password from the result
     const user = await User.findOne({ username }).select("-password");
