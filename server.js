@@ -3,28 +3,20 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-// const path = require("path"); // Not needed if static serving is removed
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 3000;
 
 // --- Middleware ---
+
 const corsOptions = {
-  origin: "*",
+  origin: process.env.CORS_ORIGIN || "*",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept, Authorization"
 };
+
 app.use(cors(corsOptions));
 app.use(express.json());
-
-// --- REMOVED: Static File Serving (handled by Nginx in production) ---
-// const mediaPath = path.join(__dirname, "media");
-// const fs = require("fs");
-// if (!fs.existsSync(mediaPath)) {
-//   fs.mkdirSync(mediaPath);
-// }
-// app.use("/media", express.static(mediaPath));
-
 
 // --- Routes ---
 const authRoutes = require("./src/routes/auth.routes");
@@ -53,6 +45,7 @@ const dbURI = process.env.MONGODB_URI || "mongodb://localhost:27017/vanchuongmam
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false })
   .then(() => {
     app.listen(port, () => {
+      console.log("Connect MongoDB Successfully");
       console.log(`Server running on port: ${port}`);
     });
   })
