@@ -37,7 +37,7 @@ exports.login = async (req, res) => {
   console.log("LOGIN REQUEST RECEIVED ON PRODUCTION SERVER");
   console.log("Timestamp:", new Date().toISOString());
   console.log("Request Body:", req.body);
-  console.log("Content-Type Header:", req.headers['content-type']);
+  console.log("Content-Type Header:", req.headers["content-type"]);
   console.log("=============================================\n");
   // ----------------------------------------
 
