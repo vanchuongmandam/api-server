@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     // Luôn lưu file vào một thư mục tạm thời trước.
     // Điều này giải quyết vấn đề req.body chưa sẵn sàng.
-    const tempDir = path.join(UPLOAD_DIR, 'tmp');
+    const tempDir = path.join(UPLOAD_DIR, "tmp");
     fs.mkdirSync(tempDir, { recursive: true });
     cb(null, tempDir);
   },
