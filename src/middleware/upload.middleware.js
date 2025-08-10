@@ -13,29 +13,35 @@ fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Luôn lưu file vào một thư mục tạm thời trước.
-    // Điều này giải quyết vấn đề req.body chưa sẵn sàng.
     const tempDir = path.join(UPLOAD_DIR, "tmp");
     fs.mkdirSync(tempDir, { recursive: true });
     cb(null, tempDir);
   },
   filename: (req, file, cb) => {
-    // Tạo tên file độc nhất để tránh trùng lặp
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
     const extension = path.extname(file.originalname);
     cb(null, "file-" + uniqueSuffix + extension);
   }
 });
 
+// --- FIX: Stricter file filter ---
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif|mp4|mov|avi|webp/;
-  const mimetype = allowedTypes.test(file.mimetype);
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  // 1. Check file extensions
+  const allowedExts = /^\.(jpeg|jpg|png|gif|mp4|mov|avi|webp)$/i;
+  const extname = allowedExts.test(path.extname(file.originalname));
+  
+  // 2. Check MIME types explicitly
+  const allowedMimeTypes = /^(image\/(jpeg|png|gif|webp))|(video\/(mp4|quicktime|x-msvideo|avi))$/i;
+  const mimetype = allowedMimeTypes.test(file.mimetype);
 
   if (mimetype && extname) {
+    // Allow file
     return cb(null, true);
   }
-  cb(new Error("File type not allowed!"));
+  
+  // Reject file
+  const errorMessage = `File type not allowed. Received mimetype: '${file.mimetype}' and extension: '${path.extname(file.originalname)}'`;
+  cb(new Error(errorMessage));
 };
 
 const upload = multer({
