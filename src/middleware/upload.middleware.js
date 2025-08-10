@@ -1,58 +1,58 @@
-
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const sanitize = require("sanitize-filename");
 
-// Define the absolute path for uploads
-// It's safer to use an absolute path that is outside of the project directory.
-const uploadDir = "/var/www/media";
+// Lấy đường dẫn từ biến môi trường. Đây là cách làm đúng đắn nhất.
+const UPLOAD_DIR = process.env.UPLOAD_PATH;
 
-// Ensure the upload directory exists
-if (!fs.existsSync(uploadDir)) {
-  console.log(`Upload directory ${uploadDir} does not exist. Please create it manually with appropriate permissions.`);
-  // In a real production setup, you should ensure this directory is created during deployment.
-  // For local development, we can create it.
-  if (process.env.NODE_ENV !== "production") {
-    try {
-      fs.mkdirSync(uploadDir, { recursive: true });
-      console.log(`Created development upload directory at ${uploadDir}`);
-    } catch (error) {
-      console.error("Failed to create development directory:", error);
-    }
-  }
+// KIỂM TRA QUAN TRỌNG: Nếu biến môi trường chưa được set, ứng dụng sẽ không khởi động
+if (!UPLOAD_DIR) {
+  throw new Error("FATAL ERROR: UPLOAD_PATH environment variable is not defined.");
 }
 
-// Set up storage engine
+// Đảm bảo thư mục upload gốc tồn tại
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
+  destination: (req, file, cb) => {
+    // Lấy đường dẫn phụ tùy chọn từ body request
+    const categoryPath = req.body.categoryPath || "";
+
+    // Vệ sinh (Sanitize) đường dẫn phụ để chống tấn công Path Traversal
+    const sanitizedParts = categoryPath.split(/[/\\]/).map(part => sanitize(part));
+    const safeSubPath = path.join(...sanitizedParts);
+    
+    // Ghép đường dẫn gốc từ .env và đường dẫn phụ đã được làm sạch
+    const finalUploadPath = path.join(UPLOAD_DIR, safeSubPath);
+
+    // Tạo cấu trúc thư mục nếu chưa tồn tại
+    fs.mkdirSync(finalUploadPath, { recursive: true });
+    
+    cb(null, finalUploadPath);
   },
-  filename: function (req, file, cb) {
-    // Create a unique filename to avoid overwriting files
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
+  filename: (req, file, cb) => {
+    // Tạo tên file độc nhất
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const extension = path.extname(file.originalname);
+    cb(null, 'file-' + uniqueSuffix + extension);
   }
 });
 
-// Filter for allowed file types (images and videos)
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|webp|gif|mp4|mov|avi/;
+  const allowedTypes = /jpeg|jpg|png|gif|mp4|mov|avi|webp/;
   const mimetype = allowedTypes.test(file.mimetype);
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
 
   if (mimetype && extname) {
     return cb(null, true);
-  } else {
-    cb(new Error("Error: File type not allowed. Only images and videos are supported."), false);
   }
+  cb(new Error("Error: File type not allowed!"));
 };
 
 const upload = multer({
   storage: storage,
-  limits: {
-    // Set a file size limit (e.g., 100MB for videos)
-    fileSize: 100 * 1024 * 1024 
-  },
+  limits: { fileSize: 1024 * 1024 * 50 }, // 50MB
   fileFilter: fileFilter
 });
 

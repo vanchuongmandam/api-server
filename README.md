@@ -1,170 +1,122 @@
-# API Server Cho Dự Án Văn Chương Mắm Đậm
+# API Server for vanchuongmamdam
 
-Đây là backend API server được xây dựng bằng Node.js, Express, và MongoDB. Server cung cấp đầy đủ các chức năng xác thực, quản lý bài viết, danh mục đa cấp, bình luận và upload media.
+This is the API server for the vanchuongmamdam project. It provides a RESTful API for managing articles, categories, comments, and users.
 
-## ✨ Tính Năng Nổi Bật
+## Features
 
-- **Xác thực & Phân quyền:** Sử dụng JWT (JSON Web Tokens). Phân quyền rõ ràng giữa người dùng thường (`user`) và quản trị viên (`admin`).
-- **Quản lý Bài viết (CRUD):** Tạo, đọc, cập nhật, xóa bài viết.
-- **Hệ thống Danh mục Đa Cấp (NEW):** Hỗ trợ tạo danh mục cha-con không giới hạn, cho phép tổ chức bài viết một cách khoa học và có cấu trúc.
-- **Hệ thống Bình luận & Trả lời:** Người dùng có thể bình luận về bài viết và trả lời các bình luận khác.
-- **Upload Media:** Cho phép upload file.
-- **Cấu hình linh hoạt:** Tùy chỉnh các thông số quan trọng qua file `.env`.
+*   User authentication with JWT
+*   CRUD operations for articles
+*   CRUD operations for categories
+*   CRUD operations for comments
+*   File uploads
+*   Article suggestions
 
-## 🚀 Cài Đặt & Khởi Chạy
+## Technologies Used
 
-### 1. Clone Repository
-```sh
-git clone <your-repository-url>
-cd <repository-name>
+*   [Node.js](https://nodejs.org/)
+*   [Express](https://expressjs.com/)
+*   [MongoDB](https://www.mongodb.com/)
+*   [Mongoose](https://mongoosejs.com/)
+*   [JWT](https://jwt.io/)
+*   [Bcrypt.js](https://www.npmjs.com/package/bcryptjs)
+*   [Multer](https://www.npmjs.com/package/multer)
+*   [Cors](https://www.npmjs.com/package/cors)
+*   [Dotenv](https://www.npmjs.com/package/dotenv)
+
+## Installation and Setup
+
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/your-username/api-server.git
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Create a `.env` file in the root directory and add the following environment variables:
+    ```
+    PORT=3000
+    MONGODB_URI=mongodb://localhost:27017/vanchuongmamdam
+    CORS_ORIGIN=*
+    JWT_SECRET=your_super_secret_key
+    ```
+4.  Start the server:
+    ```bash
+    npm start
+    ```
+
+## API Endpoints
+
+All endpoints are prefixed with `/api`.
+
+### Authentication
+
+*   `POST /auth/register` - Register a new user
+*   `POST /auth/login` - Login a user
+
+### Articles
+
+*   `GET /articles` - Get all articles
+*   `GET /articles/:slug` - Get an article by slug
+*   `GET /articles/suggestions` - Get article suggestions
+*   `POST /articles` - Create a new article
+*   `PUT /articles/:slug` - Update an article
+*   `DELETE /articles/:slug` - Delete an article
+
+### Categories
+
+*   `GET /categories` - Get all categories
+*   `POST /categories` - Create a new category
+*   `PUT /categories/:id` - Update a category
+*   `DELETE /categories/:id` - Delete a category
+
+### Comments
+
+*   `GET /comments/article/:articleId` - Get all comments for an article
+*   `POST /comments` - Create a new comment
+*   `PUT /comments/:id` - Update a comment
+*   `DELETE /comments/:id` - Delete a comment
+
+### Uploads
+
+*   `POST /upload/single` - Upload a file
+*   `POST /upload/multiple` - Upload multi file
+
+## Project Structure
+
 ```
-
-### 2. Cài đặt các Gói Phụ Thuộc
-```sh
-npm install
+.
+├── .idx
+│   └── dev.nix
+├── docker-compose.yml
+├── eslint.config.js
+├── node_modules
+├── package-lock.json
+├── package.json
+├── pnpm-lock.yaml
+├── README.md
+├── seed.js
+├── server.js
+└── src
+    ├── controllers
+    │   ├── article.controller.js
+    │   ├── auth.controller.js
+    │   ├── category.controller.js
+    │   └── comment.controller.js
+    ├── middleware
+    │   ├── auth.middleware.js
+    │   └── upload.middleware.js
+    ├── models
+    │   ├── article.model.js
+    │   ├── category.model.js
+    │   ├── comment.model.js
+    │   └── user.model.js
+    ├── routes
+    │   ├── article.routes.js
+    │   ├── auth.routes.js
+    │   ├── category.routes.js
+    │   ├── comment.routes.js
+    │   └── upload.routes.js
+    └── services
+        └── article.service.js
 ```
-
-### 3. Tạo file Biến Môi Trường (`.env`)
-Tạo một file mới tên là `.env` ở thư mục gốc và sao chép nội dung từ file `.env.example` (nếu có) hoặc tự điền các thông tin sau:
-
-```ini
-# Cổng mà server sẽ chạy (mặc định: 3000)
-PORT=5000
-
-# Chuỗi kết nối tới MongoDB
-MONGODB_URI=mongodb://localhost:27017/vanchuongmamdam
-
-# Khóa bí mật để tạo JWT (thay bằng một chuỗi ngẫu nhiên và dài)
-JWT_SECRET=your_super_secret_key_should_be_long_and_random
-
-# (QUAN TRỌNG) URL của frontend được phép truy cập API
-CORS_ORIGIN=http://localhost:3000
-```
-
-### 4. Khởi chạy Server
-- **Chế độ Development (với hot-reload):**
-  ```sh
-  npm run dev
-  ```
-- **Chế độ Production:**
-  ```sh
-  npm start
-  ```
-Server sẽ chạy trên cổng được định nghĩa trong file `.env` hoặc cổng 3000.
-
----
-
-## 📖 Tài Liệu API
-
-### **1. Authentication (`/api/auth`)**
-- **`POST /api/auth/register`**: Đăng ký người dùng mới.
-- **`POST /api/auth/login`**: Đăng nhập và nhận về `token` cùng thông tin `user`.
-
----
-
-### **2. Categories (`/api/categories`) (UPDATED)**
-
-Hệ thống danh mục giờ đây hỗ trợ cấu trúc cây.
-
-#### **2.1. Lấy tất cả danh mục (dạng cây)**
-- **Method:** `GET`
-- **URL:** `/api/categories`
-- **Access:** `Public`
-- **Success Response:**
-  Trả về một mảng các danh mục gốc. Mỗi danh mục có thể chứa một mảng `children` là các danh mục con.
-  ```json
-  [
-    {
-      "_id": "60d0fe4f5311236168a109ca",
-      "name": "Phê bình & Tiểu luận",
-      "slug": "phe-binh-tieu-luan",
-      "parent": null,
-      "children": [
-        {
-          "_id": "60d0fe4f5311236168a109cb",
-          "name": "Phê bình Thơ Mới",
-          "slug": "phe-binh-tho-moi",
-          "parent": "60d0fe4f5311236168a109ca",
-          "children": []
-        }
-      ]
-    },
-    {
-      "_id": "60d0fe4f5311236168a109cc",
-      "name": "Sáng tác",
-      "slug": "sang-tac",
-      "parent": null,
-      "children": []
-    }
-  ]
-  ```
-
-#### **2.2. Tạo danh mục mới**
-- **Method:** `POST`
-- **URL:** `/api/categories`
-- **Access:** `Private` (Admin)
-- **Authorization:** `Bearer <admin_token>`
-- **Body (Tạo danh mục gốc):**
-  ```json
-  {
-      "name": "Sáng tác",
-      "slug": "sang-tac"
-  }
-  ```
-- **Body (Tạo danh mục con):**
-  Thêm `parentId` là `_id` của danh mục cha.
-  ```json
-  {
-      "name": "Tản văn",
-      "slug": "tan-van",
-      "parentId": "60d0fe4f5311236168a109cc"
-  }
-  ```
-
-#### **2.3. Lấy bài viết theo danh mục (bao gồm cả danh mục con)**
-- **Method:** `GET`
-- **URL:** `/api/categories/:slug/articles`
-- **Access:** `Public`
-- **Description:** Lấy tất cả bài viết thuộc danh mục có `slug` được chỉ định và tất cả các bài viết thuộc danh mục con của nó.
-
-#### **2.4. Xóa danh mục**
-- **Method:** `DELETE`
-- **URL:** `/api/categories/:id`
-- **Access:** `Private` (Admin)
-- **Description:** Chỉ có thể xóa danh mục nếu nó **không có danh mục con** và **không có bài viết nào** đang sử dụng.
-
----
-
-### **3. Articles (`/api/articles`)**
-
-#### **3.1. Tạo/Cập nhật bài viết**
-- **`POST /api/articles`** (Tạo mới)
-- **`PUT /api/articles/:id`** (Cập nhật)
-- **Access:** `Private` (Admin)
-- **Description:** Khi tạo hoặc cập nhật một bài viết, trường `category` phải là `_id` của một danh mục cụ thể (thường là một danh mục con, không phải danh mục gốc).
-- **Body:**
-  ```json
-  {
-      "slug": "bai-viet-moi",
-      "title": "Bài Viết Mới",
-      "author": "Tác Giả A",
-      "category": "60d0fe4f5311236168a109cb", // ID của danh mục "Phê bình Thơ Mới"
-      "excerpt": "Tóm tắt bài viết...",
-      "content": "Nội dung chi tiết của bài viết..."
-  }
-  ```
-_Các endpoint khác của Articles (GET, DELETE) không thay đổi._
-
----
-
-### **4. Comments (`/api/comments`)**
-- **`POST /api/comments`**: Tạo bình luận mới hoặc trả lời bình luận (`parentCommentId`).
-- **`GET /api/comments/article/:articleId`**: Lấy tất cả bình luận (dạng lồng nhau) của một bài viết.
-- **`PUT /api/comments/:commentId`**: Cập nhật bình luận (chỉ tác giả).
-- **`DELETE /api/comments/:commentId`**: Xóa bình luận (tác giả hoặc admin).
-
----
-### **5. Media Upload (`/api/upload`)**
-- **`POST /api/upload`**: Tải một file media lên và nhận về URL.
-- **Access:** `Private` (Yêu cầu đăng nhập).
-- **Body:** Dạng `multipart/form-data` với một trường tên là `mediaFile`.
