@@ -33,9 +33,9 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     // Tạo tên file độc nhất
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
     const extension = path.extname(file.originalname);
-    cb(null, 'file-' + uniqueSuffix + extension);
+    cb(null, "file-" + uniqueSuffix + extension);
   }
 });
 
