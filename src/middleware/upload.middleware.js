@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const sanitize = require("sanitize-filename");
 
-// Lấy đường dẫn từ biến môi trường. Đây là cách làm đúng đắn nhất.
+// Lấy đường dẫn từ biến môi trường.
 const UPLOAD_DIR = process.env.UPLOAD_PATH;
 
 // KIỂM TRA QUAN TRỌNG: Nếu biến môi trường chưa được set, ứng dụng sẽ không khởi động
@@ -16,23 +16,14 @@ fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Lấy đường dẫn phụ tùy chọn từ body request
     const categoryPath = req.body.categoryPath || "";
-
-    // Vệ sinh (Sanitize) đường dẫn phụ để chống tấn công Path Traversal
     const sanitizedParts = categoryPath.split(/[/\\]/).map(part => sanitize(part));
     const safeSubPath = path.join(...sanitizedParts);
-    
-    // Ghép đường dẫn gốc từ .env và đường dẫn phụ đã được làm sạch
     const finalUploadPath = path.join(UPLOAD_DIR, safeSubPath);
-
-    // Tạo cấu trúc thư mục nếu chưa tồn tại
     fs.mkdirSync(finalUploadPath, { recursive: true });
-    
     cb(null, finalUploadPath);
   },
   filename: (req, file, cb) => {
-    // Tạo tên file độc nhất
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
     const extension = path.extname(file.originalname);
     cb(null, "file-" + uniqueSuffix + extension);
