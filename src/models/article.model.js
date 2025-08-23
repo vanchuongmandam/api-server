@@ -31,7 +31,7 @@ const articleSchema = new mongoose.Schema({
     required: true
   },
   excerpt: { type: String },
-  content: { type: String, required: true },
+  content: { type: mongoose.Schema.Types.Mixed, required: true },
     
   // ĐÃ SỬA: Thay thế 'imageUrl' bằng một mảng các đối tượng media
   media: [mediaFileSchema], 
