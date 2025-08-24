@@ -49,9 +49,20 @@ const createMediaObject = (req, file) => {
   const baseUrl = process.env.PUBLIC_URL || `${req.protocol}://${req.get("host")}`;
   const fileUrl = `${baseUrl}/media/${urlPath}`;
     
+  let mediaType;
+  if (file.mimetype.startsWith("image")) {
+    mediaType = "image";
+  } else if (file.mimetype.startsWith("video")) {
+    mediaType = "video";
+  } else if (file.mimetype === "application/pdf") {
+    mediaType = "pdf";
+  } else {
+    mediaType = "other"; // Fallback for unknown types, or handle as an error
+  }
+
   return {
     url: fileUrl,
-    mediaType: file.mimetype.startsWith("image") ? "image" : "video"
+    mediaType: mediaType
   };
 };
 
