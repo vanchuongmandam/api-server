@@ -10,7 +10,7 @@ const mediaFileSchema = new mongoose.Schema({
   mediaType: { 
     type: String, 
     required: true, 
-    enum: ["image", "video"] 
+    enum: ["image", "video", "pdf"] 
   },
     
   // (Tùy chọn) Một chú thích ngắn cho file media, dùng làm alt-text hoặc caption
@@ -25,7 +25,7 @@ const articleSchema = new mongoose.Schema({
   title: { type: String, required: true },
   author: { type: String, required: true },
   date: { type: String, required: true }, 
-  category: { 
+  category: {
     type: mongoose.Schema.Types.ObjectId, 
     ref: "Category",
     required: true
